@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_nav_graph"
+    app:startDestination="@id/posFragment"
+    tools:ignore="InvalidNavigation">
+
+        <fragment
+            android:id="@+id/posFragment"
+            android:name="com.apc.demo_pos.pos.PosManagement"
+            android:label="Welcome"
+            tools:layout="@layout/pos_fragment">
+
+            <action
+                android:id="@+id/action_posFragment_to_salesMainFragment"
+                app:destination="@id/salesMainFragment" />
+            <action
+                android:id="@+id/action_posFragment_to_transactionPreviewFragment"
+                app:destination="@id/transactionPreviewFragment" />
+        </fragment>
+
+        <fragment
+            android:id="@+id/salesMainFragment"
+            android:name="com.apc.demo_pos.pos.SalesMainFragment"
+            android:label="Sales">
+
+            <action
+                android:id="@+id/action_salesMainFragment_to_transactionPreviewFragment"
+                app:destination="@id/transactionPreviewFragment" />
+        </fragment>
+        <fragment
+            android:id="@+id/transactionPreviewFragment"
+            android:name="com.apc.demo_pos.pos.TransactionPreviewFragment"
+            android:label="Transaction Preview">
+
+            <!-- Arguments -->
+            <argument
+                android:name="transactionType"
+                app:argType="string" />
+            <argument
+                android:name="dispenser"
+                app:argType="string" />
+            <argument
+                android:name="nozzle"
+                app:argType="string" />
+            <argument
+                android:name="quantity"
+                app:argType="string" />
+            <argument
+                android:name="pricePerKg"
+                app:argType="string" />
+
+        </fragment>
+
+</navigation>

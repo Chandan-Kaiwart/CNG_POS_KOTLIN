@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="bottom"
+    android:background="@drawable/bottom_sheet_background"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <!-- Close Button - ADDED -->
+    <ImageView
+        android:id="@+id/btnCloseBottomSheet"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_gravity="end"
+        android:padding="4dp"
+        android:src="@drawable/ic_close_gray"
+        android:contentDescription="@string/close" />
+
+    <!-- Coin Animation Area -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:layout_gravity="center">
+
+        <ImageView
+            android:id="@+id/ivCoinAnimation"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_rupee_coin"
+            android:contentDescription="@string/payment_pending" />
+    </FrameLayout>
+
+    <!-- Title -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/complete_payment_upi"
+        android:textColor="@color/text_dark"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_marginTop="16dp" />
+
+    <!-- Description -->
+    <TextView
+        android:id="@+id/tvPendingDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/accept_payment_request"
+        android:textColor="@color/text_gray"
+        android:textSize="14sp"
+        android:gravity="center"
+        android:layout_marginTop="8dp" />
+
+    <!-- PhonePe Logo -->
+    <ImageView
+        android:layout_width="100dp"
+        android:layout_height="32dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="24dp"
+        android:src="@drawable/ic_phonepe_logo"
+        android:contentDescription="PhonePe" />
+
+    <!-- Timer - ADDED -->
+    <TextView
+        android:id="@+id/tvTimer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="05:00"
+        android:textColor="@color/warning_orange"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_marginTop="16dp" />
+
+    <!-- Timeout Warning -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/timeout_warning_background"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:padding="12dp"
+        android:layout_marginTop="16dp">
+
+        <ImageView
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:src="@drawable/ic_clock"
+            android:contentDescription="@string/timeout" />
+
+        <TextView
+            android:id="@+id/tvSheetTimeout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="@string/timeout_message"
+            android:textColor="@color/warning_orange"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+    <!-- Verify Payment Button - ADDED -->
+    <Button
+        android:id="@+id/btnVerifyPayment"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginTop="24dp"
+        android:background="@drawable/button_primary_background"
+        android:text="Verify Payment"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+</LinearLayout>

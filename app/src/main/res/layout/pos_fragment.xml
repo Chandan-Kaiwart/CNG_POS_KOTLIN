@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_orange"
+    tools:context=".MainActivity">
+
+    <!-- Header with curved bottom -->
+    <View
+        android:id="@+id/headerBackground"
+        android:layout_width="match_parent"
+        android:layout_height="260sp"
+        android:background="@drawable/header_curved_background"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Logo Image -->
+    <ImageView
+        android:id="@+id/logoImage"
+        android:layout_width="200sp"
+        android:layout_height="160sp"
+        android:layout_marginTop="40sp"
+        android:src="@drawable/rsgl"
+        android:contentDescription="@string/logo_description"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Main Card -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/mainCard"
+        android:layout_width="0sp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="24sp"
+        android:layout_marginTop="24sp"
+        app:cardBackgroundColor="@color/white"
+        app:cardCornerRadius="24sp"
+        app:cardElevation="8sp"
+        app:layout_constraintTop_toBottomOf="@id/headerBackground"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="32sp"
+            android:gravity="center">
+
+            <!-- Welcome Title -->
+            <TextView
+                android:id="@+id/welcomeTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/welcome_title"
+                android:textSize="28sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_dark"
+                android:gravity="center"
+                android:lineSpacingMultiplier="1.2" />
+
+            <!-- Subtitle -->
+            <TextView
+                android:id="@+id/welcomeSubtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16sp"
+                android:text="@string/welcome_subtitle"
+                android:textSize="16sp"
+                android:textColor="@color/text_gray"
+                android:gravity="center"
+                android:lineSpacingMultiplier="1.4" />
+
+            <!-- Features Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32sp"
+                android:orientation="horizontal"
+                android:gravity="center">
+
+                <!-- Eco-Friendly Feature -->
+                <LinearLayout
+                    android:layout_width="0sp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <ImageView
+                        android:layout_width="40sp"
+                        android:layout_height="40sp"
+                        android:src="@drawable/ic_eco_friendly"
+                        android:contentDescription="@string/eco_friendly" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8sp"
+                        android:text="@string/eco_friendly"
+                        android:textSize="13sp"
+                        android:textColor="@color/text_dark"
+                        android:gravity="center" />
+
+                </LinearLayout>
+
+                <!-- Fixed Rate Feature -->
+                <LinearLayout
+                    android:layout_width="0sp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <ImageView
+                        android:layout_width="40sp"
+                        android:layout_height="40sp"
+                        android:src="@drawable/ic_money_bag"
+                        android:contentDescription="@string/fixed_rate" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8sp"
+                        android:text="@string/fixed_rate"
+                        android:textSize="13sp"
+                        android:textColor="@color/text_dark"
+                        android:gravity="center" />
+
+                </LinearLayout>
+
+                <!-- Quick Service Feature -->
+                <LinearLayout
+                    android:layout_width="0sp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <ImageView
+                        android:layout_width="40sp"
+                        android:layout_height="40sp"
+                        android:src="@drawable/ic_quick_service"
+                        android:contentDescription="@string/quick_service" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8sp"
+                        android:text="@string/quick_service"
+                        android:textSize="13sp"
+                        android:textColor="@color/text_dark"
+                        android:gravity="center" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
+    <!-- Click to Enter Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnClickToEnter"
+        android:layout_width="0sp"
+        android:layout_height="80sp"
+        android:layout_marginHorizontal="24sp"
+        android:layout_marginTop="24sp"
+        android:text="@string/click_to_enter"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:textColor="@color/white"
+        android:backgroundTint="@color/button_green"
+        app:cornerRadius="20sp"
+        app:icon="@drawable/ic_arrow_right"
+        app:iconGravity="end"
+        app:iconSize="28sp"
+        app:iconTint="@color/white"
+        app:layout_constraintTop_toBottomOf="@id/mainCard"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- System Status -->
+    <TextView
+        android:id="@+id/systemStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24sp"
+        android:text="@string/system_status"
+        android:textSize="14sp"
+        android:textColor="@color/text_light_gray"
+        app:layout_constraintTop_toBottomOf="@id/btnClickToEnter"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Terms and Privacy Links -->
+    <LinearLayout
+        android:id="@+id/linksContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8sp"
+        android:orientation="horizontal"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@id/systemStatus"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <TextView
+            android:id="@+id/termsOfService"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/terms_of_service"
+            android:textSize="14sp"
+            android:textColor="@color/link_teal"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="12sp"
+            android:text="•"
+            android:textSize="14sp"
+            android:textColor="@color/text_light_gray" />
+
+        <TextView
+            android:id="@+id/privacyPolicy"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/privacy_policy"
+            android:textSize="14sp"
+            android:textColor="@color/link_teal"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <!-- Copyright Footer -->
+    <TextView
+        android:id="@+id/copyright"
+        android:layout_width="0sp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="24sp"
+        android:layout_marginTop="16sp"
+        android:layout_marginBottom="24sp"
+        android:background="@drawable/copyright_background"
+        android:paddingVertical="12sp"
+        android:paddingHorizontal="24sp"
+        android:text="@string/copyright"
+        android:textSize="13sp"
+        android:textColor="@color/white"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@id/linksContainer"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

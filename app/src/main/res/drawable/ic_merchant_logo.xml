@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <!-- Shopping bag background -->
+    <path
+        android:fillColor="#FF9800"
+        android:pathData="M8,12L12,4h24l4,8v28c0,2.2 -1.8,4 -4,4H12c-2.2,0 -4,-1.8 -4,-4V12z" />
+    <!-- Handle -->
+    <path
+        android:fillColor="#FFC107"
+        android:pathData="M16,18v-4c0,-4.4 3.6,-8 8,-8s8,3.6 8,8v4h-4v-4c0,-2.2 -1.8,-4 -4,-4s-4,1.8 -4,4v4h-4z" />
+    <!-- Smile -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M18,26c0,0 4,6 12,6s12,-6 12,-6"
+        android:strokeWidth="2"
+        android:strokeColor="#FFFFFF" />
+</vector>

@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="Primary">#02603E</color>
+    <color name="Accent">#E9C006</color>
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#63052A</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="yellow">#fd7e14</color>
+    <color name="transparent">#00FFFFFF</color>
+
+    <color name="green">#28A745</color>
+    <color name="orange">#FD7E14</color>
+
+    <color name="dot_dark_screen1">#63052A</color>
+    <color name="dot_dark_screen2">#E9C006</color>
+    <color name="dot_dark_screen3">#00695C</color>
+    <color name="dot_dark_screen4">#ef6c00</color>
+    <color name="dot_dark_screen5">#3E2723</color>
+
+    <color name="dot_light_screen1">#F8BBD0</color>
+    <color name="dot_light_screen2">#E1BEE7</color>
+    <color name="dot_light_screen3">#80CBC4</color>
+    <color name="dot_light_screen4">#FFE0B2</color>
+    <color name="dot_light_screen5">#A1887F</color>
+
+    <array name="dot_active">
+        <item>@color/dot_light_screen1</item>
+        <item>@color/dot_light_screen2</item>
+        <item>@color/dot_light_screen3</item>
+        <item>@color/dot_light_screen4</item>
+        <item>@color/dot_light_screen5</item>
+    </array>
+
+    <array name="dot_inactive">
+        <item>@color/dot_dark_screen1</item>
+        <item>@color/dot_dark_screen2</item>
+        <item>@color/dot_dark_screen3</item>
+        <item>@color/dot_dark_screen4</item>
+        <item>@color/dot_dark_screen5</item>
+    </array>
+
+    <color name="colorWhite">#B8F8F8F8</color>
+    <color name="colorGrey">#c3c3c3</color>
+
+    <color name="holo_red_dark">#D32F2F</color>
+    <color name="holo_blue_dark">#1976D2</color>
+    <color name="holo_orange_dark">#F57C00</color>
+    <color name="holo_purple">#8E24AA</color>
+    <color name="holo_green_dark">#388E3C</color>
+
+    <!-- Text colors -->
+    <color name="text_primary">#333333</color>
+    <color name="text_secondary">#666666</color>
+    <color name="text_dark">#1A1A1A</color>
+    <color name="text_gray">#6B7280</color>
+    <color name="text_light_gray">#9CA3AF</color>
+    <color name="text_primary1">#212121</color>
+
+    <!-- Background -->
+    <color name="dashboard_bg">#F4F6F9</color>
+    <color name="card_white">#FFFFFF</color>
+    <color name="background_color">#F5F5F5</color>
+    <color name="fragment_background">#F5F5F5</color>
+    <color name="card_background">#FFFFFF</color>
+    <color name="surface_color">#FFFFFF</color>
+    <color name="input_background">#FAFAFA</color>
+    <color name="background_orange">#E8A64C</color>
+
+    <!-- Menu colors -->
+    <color name="menu_header_bg1">#2E7D32</color>
+    <color name="menu_text_color1">#333333</color>
+
+    <!-- Vehicle tracking & status -->
+    <color name="path_color">#FF4081</color>
+    <color name="moving_vehicle_color">#4CAF50</color>
+    <color name="stopped_vehicle_color">#FF9800</color>
+    <color name="parked_vehicle_color">#9E9E9E</color>
+    <color name="overspeed_color">#F44336</color>
+    <color name="normal_speed_color">#4CAF50</color>
+
+    <!-- Status colors -->
+    <color name="status_online">#4CAF50</color>
+    <color name="status_offline">#F44336</color>
+    <color name="status_idle">#FF9800</color>
+
+    <!-- Primary colors -->
+    <color name="primary_color">#1976D2</color>
+    <color name="primary_blue">#2196F3</color>
+    <color name="primary_dark">#0D47A1</color>
+    <color name="primary_orange">#FF9800</color>
+
+    <!-- UI colors -->
+    <color name="light_gray">#E0E0E0</color>
+    <color name="bg_gray_rounded">#F8F9FA</color>
+    <color name="border_gray">#CCCCCC</color>
+    <color name="divider_color">#EEEEEE</color>
+
+    <!-- Button colors -->
+    <color name="button_gray">#9E9E9E</color>
+    <color name="button_primary">#2196F3</color>
+    <color name="button_success">#4CAF50</color>
+    <color name="button_green">#4CAF50</color>
+
+    <!-- Status/Alert colors -->
+    <color name="green_amount">#4CAF50</color>
+    <color name="success_green">#2E7D32</color>
+    <color name="error_red">#D32F2F</color>
+    <color name="warning_orange">#FF9800</color>
+
+    <!-- Header colors -->
+    <color name="header_orange">#E89830</color>
+
+    <!-- Link colors -->
+    <color name="copyright_teal">#1A7A7A</color>
+    <color name="link_teal">#2D8B8B</color>
+
+    <!-- Logo Colors -->
+    <color name="logo_red">#E53935</color>
+    <color name="logo_green">#43A047</color>
+    <color name="logo_orange">#FB8C00</color>
+
+
+
+
+
+
+    <!-- Primary Colors -->
+
+    <color name="accent_yellow">#FFD93D</color>
+    <color name="light_blue">#5B7FCC</color>
+
+
+
+
+
+    <color name="copyright_bg">#E8EDF7</color>
+
+    <color name="divider_gray">#E5E5E5</color>
+    <color name="background_gray">#F0F0F0</color>
+
+    <!-- Accent Colors -->
+    <color name="accent_green">#2E9D5C</color>
+    <color name="total_amount_bg">#E8F5E9</color>
+    <color name="white_70">#B3FFFFFF</color>
+    <color name="white_30">#4DFFFFFF</color>
+
+    <!-- PhonePe Colors -->
+    <color name="phonepe_purple">#5F259F</color>
+    <color name="payment_blue">#2C387E</color>
+    <color name="payment_blue_light">#E3E8F7</color>
+    <color name="success_green_light">#E8F5E9</color>
+
+    <color name="warning_orange_light">#FFF3E0</color>
+    <color name="warning_gold">#FFB300</color>
+    <color name="step_inactive">#C5CAE9</color>
+    <color name="button_disabled">#E0E0E0</color>
+
+
+
+</resources>
