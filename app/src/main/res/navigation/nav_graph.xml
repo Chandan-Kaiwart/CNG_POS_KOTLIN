@@ -8,7 +8,7 @@
 
         <fragment
             android:id="@+id/posFragment"
-            android:name="com.apc.demo_pos.pos.PosManagement"
+            android:name="com.rsgl.cngpos.pos.PosManagement"
             android:label="Welcome"
             tools:layout="@layout/pos_fragment">
 
@@ -22,7 +22,7 @@
 
         <fragment
             android:id="@+id/salesMainFragment"
-            android:name="com.apc.demo_pos.pos.SalesMainFragment"
+            android:name="com.rsgl.cngpos.pos.SalesMainFragment"
             android:label="Sales">
 
             <action
@@ -31,7 +31,7 @@
         </fragment>
         <fragment
             android:id="@+id/transactionPreviewFragment"
-            android:name="com.apc.demo_pos.pos.TransactionPreviewFragment"
+            android:name="com.rsgl.cngpos.pos.TransactionPreviewFragment"
             android:label="Transaction Preview">
 
             <!-- Arguments -->

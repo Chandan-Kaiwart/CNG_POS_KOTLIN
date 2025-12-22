@@ -7,13 +7,16 @@ plugins {
 }
 
 android {
-    namespace = "com.apc.demo_pos"
-    compileSdk {
-        version = release(36)
+    namespace = "com.rsgl.cngpos"
+    compileSdk = 36
+    packagingOptions {
+        resources {
+            excludes += "META-INF/versions/**"
+        }
     }
 
     defaultConfig {
-        applicationId = "com.apc.demo_pos"
+        applicationId = "com.rsgl.cngpos"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
