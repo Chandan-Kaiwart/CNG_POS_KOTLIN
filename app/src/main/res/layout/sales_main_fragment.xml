@@ -59,8 +59,8 @@
             android:paddingHorizontal="12dp"
             android:text="@string/auto_sales_transaction"
             android:textColor="@color/primary_blue"
-            android:textSize="14sp"
-            android:textStyle="bold" />
+            android:textSize="14sp" />
+
 
         <TextView
             android:id="@+id/tabManualSales"
@@ -132,7 +132,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:fillViewport="true"
-            android:visibility="gone">
+            android:visibility="visible">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -140,15 +140,15 @@
                 android:orientation="vertical"
                 android:padding="24dp">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginBottom="24dp"
-                    android:text="@string/manual_sales_title"
-                    android:textColor="@color/primary_blue"
-                    android:textSize="22sp"
-                    android:textStyle="bold" />
+<!--                <TextView-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_gravity="center_horizontal"-->
+<!--                    android:layout_marginBottom="24dp"-->
+<!--                    android:text="@string/manual_sales_title"-->
+<!--                    android:textColor="@color/primary_blue"-->
+<!--                    android:textSize="22sp"-->
+<!--                    android:textStyle="bold" />-->
 
                 <!-- Sales (Kg) Input -->
                 <TextView
@@ -169,7 +169,7 @@
                     android:hint="@string/enter_sales_kg"
                     android:inputType="numberDecimal"
                     android:paddingHorizontal="16dp"
-                    android:textColor="@color/text_dark"
+                    android:textColor="@color/black"
                     android:textColorHint="@color/text_gray" />
 
                 <!-- Station Spinner -->
@@ -230,6 +230,9 @@
                     android:spinnerMode="dropdown" />
 
                 <!-- Price Info Card -->
+                <!-- Replace your priceInfoCard section with this fixed version -->
+
+                <!-- Price Info Card -->
                 <LinearLayout
                     android:id="@+id/priceInfoCard"
                     android:layout_width="match_parent"
@@ -237,7 +240,7 @@
                     android:layout_marginTop="8dp"
                     android:layout_marginBottom="24dp"
                     android:background="@drawable/input_background"
-                    android:orientation="vertical"
+                    android:orientation="horizontal"
                     android:paddingVertical="16dp"
                     android:paddingHorizontal="16dp">
 
@@ -248,92 +251,96 @@
                         android:layout_marginEnd="12dp"
                         android:background="@color/primary_blue" />
 
-                    <!-- Gas Rate Row -->
+                    <!-- Content Container -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:paddingStart="16dp">
+                        android:orientation="vertical">
 
-                        <TextView
-                            android:layout_width="0dp"
+                        <!-- Gas Rate Row -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="@string/gas_rate"
-                            android:textColor="@color/text_gray"
-                            android:textSize="14sp" />
+                            android:orientation="horizontal">
 
-                        <TextView
-                            android:id="@+id/tvGasRate"
-                            android:layout_width="wrap_content"
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="@string/gas_rate"
+                                android:textColor="@color/black"
+                                android:textSize="14sp" />
+
+                            <TextView
+                                android:id="@+id/tvGasRate"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="₹93.50/kg"
+                                android:textColor="@color/text_dark"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
+
+                        </LinearLayout>
+
+                        <!-- Quantity Row -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="₹93.50/kg"
-                            android:textColor="@color/text_dark"
-                            android:textSize="14sp"
-                            android:textStyle="bold" />
+                            android:layout_marginTop="8dp"
+                            android:orientation="horizontal">
 
-                    </LinearLayout>
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="@string/quantity"
+                                android:textColor="@color/black"
+                                android:textSize="14sp" />
 
-                    <!-- Quantity Row -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:orientation="horizontal"
-                        android:paddingStart="16dp">
+                            <TextView
+                                android:id="@+id/tvQuantity"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0.00 kg"
+                                android:textColor="@color/text_dark"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
 
-                        <TextView
-                            android:layout_width="0dp"
+                        </LinearLayout>
+
+                        <!-- Divider -->
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_marginTop="12dp"
+                            android:layout_marginBottom="12dp"
+                            android:background="@color/border_gray" />
+
+                        <!-- Total Amount Row -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="@string/quantity"
-                            android:textColor="@color/text_gray"
-                            android:textSize="14sp" />
+                            android:orientation="horizontal">
 
-                        <TextView
-                            android:id="@+id/tvQuantity"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="0.00 kg"
-                            android:textColor="@color/text_dark"
-                            android:textSize="14sp"
-                            android:textStyle="bold" />
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="@string/total_amount"
+                                android:textColor="@color/text_dark"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
 
-                    </LinearLayout>
+                            <TextView
+                                android:id="@+id/tvTotalAmount"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="₹0.00"
+                                android:textColor="@color/primary_blue"
+                                android:textSize="18sp"
+                                android:textStyle="bold" />
 
-                    <!-- Divider -->
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginTop="12dp"
-                        android:layout_marginBottom="12dp"
-                        android:layout_marginStart="16dp"
-                        android:background="@color/border_gray" />
-
-                    <!-- Total Amount Row -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:paddingStart="16dp">
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="@string/total_amount"
-                            android:textColor="@color/text_dark"
-                            android:textSize="16sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/tvTotalAmount"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="₹0.00"
-                            android:textColor="@color/primary_blue"
-                            android:textSize="18sp"
-                            android:textStyle="bold" />
+                        </LinearLayout>
 
                     </LinearLayout>
 
@@ -390,6 +397,7 @@
             android:layout_height="56dp"
             android:layout_weight="1"
             android:layout_marginStart="8dp"
+            android:layout_marginTop="-10sp"
             android:background="@drawable/button_disabled_background"
             android:gravity="center"
             android:text="@string/confirm_selection"

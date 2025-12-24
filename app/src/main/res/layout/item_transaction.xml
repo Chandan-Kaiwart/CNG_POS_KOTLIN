@@ -18,7 +18,7 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- Order ID and DateTime Row -->
+        <!-- POS Sale ID and DateTime Row -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -26,11 +26,11 @@
             android:layout_marginBottom="8dp">
 
             <TextView
-                android:id="@+id/tvOrderId"
+                android:id="@+id/tvPosSaleId"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Order #12345"
+                android:text="Sale #12345"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:textColor="@color/text_dark" />
@@ -42,6 +42,75 @@
                 android:text="12/09/2025 10:30"
                 android:textSize="12sp"
                 android:textColor="@color/text_gray" />
+
+        </LinearLayout>
+
+        <!-- Transaction Status Badge -->
+        <TextView
+            android:id="@+id/tvTransactionStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/badge_pending"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="4dp"
+            android:text="PENDING"
+            android:textColor="@android:color/white"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+        <!-- IOT Order ID (conditionally visible) -->
+        <LinearLayout
+            android:id="@+id/layoutIotOrderId"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="IOT Order: "
+                android:textColor="@color/text_gray"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/tvIotOrderId"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="412010"
+                android:textColor="@color/primary_blue"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <!-- Manual Sale ID (conditionally visible) -->
+        <LinearLayout
+            android:id="@+id/layoutManualSaleId"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Manual Sale: "
+                android:textColor="@color/text_gray"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/tvManualSaleId"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="MS001"
+                android:textColor="@color/primary_blue"
+                android:textSize="13sp"
+                android:textStyle="bold" />
 
         </LinearLayout>
 

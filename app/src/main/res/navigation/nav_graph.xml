@@ -51,6 +51,15 @@
                 android:name="pricePerKg"
                 app:argType="string" />
 
+            <argument
+                android:name="iotOrderId"
+                app:argType="integer"
+                android:defaultValue="0" />
+            <argument
+                android:name="manualSaleId"
+                app:argType="integer"
+                 />
+
         </fragment>
 
 </navigation>

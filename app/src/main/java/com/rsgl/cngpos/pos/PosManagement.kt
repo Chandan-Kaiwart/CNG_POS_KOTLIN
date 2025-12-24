@@ -6,9 +6,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import com.rsgl.cngpos.databinding.PosFragmentBinding
+
 import java.util.*
 import androidx.navigation.fragment.findNavController
+import com.rsgl.cngpos.databinding.PosFragmentBinding
 
 
 class PosManagement : Fragment() {

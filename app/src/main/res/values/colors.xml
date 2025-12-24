@@ -8,7 +8,7 @@
     <color name="purple_700">#FF3700B3</color>
     <color name="teal_200">#FF03DAC5</color>
     <color name="teal_700">#FF018786</color>
-    <color name="black">#63052A</color>
+    <color name="black">#000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="yellow">#fd7e14</color>
     <color name="transparent">#00FFFFFF</color>
@@ -90,7 +90,7 @@
 
     <!-- Primary colors -->
     <color name="primary_color">#1976D2</color>
-    <color name="primary_blue">#2196F3</color>
+    <color name="primary_blue">#4169E1</color>
     <color name="primary_dark">#0D47A1</color>
     <color name="primary_orange">#FF9800</color>
 
@@ -125,17 +125,10 @@
     <color name="logo_orange">#FB8C00</color>
 
 
-
-
-
-
     <!-- Primary Colors -->
 
     <color name="accent_yellow">#FFD93D</color>
     <color name="light_blue">#5B7FCC</color>
-
-
-
 
 
     <color name="copyright_bg">#E8EDF7</color>
@@ -160,6 +153,6 @@
     <color name="step_inactive">#C5CAE9</color>
     <color name="button_disabled">#E0E0E0</color>
 
-
+    <color name="selection_blue">#E3F2FD</color>
 
 </resources>

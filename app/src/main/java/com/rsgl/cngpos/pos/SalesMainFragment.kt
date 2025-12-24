@@ -1,11 +1,13 @@
 package com.rsgl.cngpos.pos
 
+import android.content.ContentValues.TAG
 import android.graphics.Typeface
 import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
+import com.rsgl.cngpos.R
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,7 +17,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.rsgl.cngpos.R
 import com.rsgl.cngpos.pos.adapter.SalesTransactionAdapter
 import com.rsgl.cngpos.pos.model.SaleTransaction
 import org.json.JSONArray
@@ -28,6 +29,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.collections.isNotEmpty
 import androidx.navigation.fragment.findNavController
+
 
 
 class SalesMainFragment : Fragment() {
@@ -87,6 +89,12 @@ class SalesMainFragment : Fragment() {
         setupButtons()
         setupQuantityCalculation()
         updateTabUI()
+
+        // Only refresh if Auto Sales tab is selected
+        if (isAutoSalesSelected) {
+            Log.d("SalesMainFragment", "Fragment resumed - refreshing sales list")
+            fetchLatestSales()
+        }
     }
 
     private fun initViews(root: View) {
@@ -240,6 +248,8 @@ class SalesMainFragment : Fragment() {
         }
     }
 
+    // Replace your existing parseJsonResponse() function in SalesMainFragment.kt with this:
+
     private fun parseJsonResponse(jsonString: String): List<SaleTransaction> {
         val transactions = mutableListOf<SaleTransaction>()
 
@@ -247,6 +257,12 @@ class SalesMainFragment : Fragment() {
             val jsonArray = JSONArray(jsonString)
             for (i in 0 until jsonArray.length()) {
                 val jsonObject = jsonArray.getJSONObject(i)
+
+                // Get all fields, handling nulls properly
+                val manualSaleId = jsonObject.optString("Manual_SaleID", "")
+                val iotOrderId = jsonObject.optString("IOT_OrderID", "")
+                val posSaleId = jsonObject.optString("POS_SaleID", "")
+                val transactionStatus = jsonObject.optString("Transaction_Status", "")
 
                 val transaction = SaleTransaction(
                     dispenserId = jsonObject.optString("Dispenser_Id", "N/A"),
@@ -256,14 +272,26 @@ class SalesMainFragment : Fragment() {
                     date = jsonObject.optString("SaleDate", "N/A"),
                     time = "",
                     pricePerKg = jsonObject.optString("Gas_Rate", "93.50"),
-                    orderId = jsonObject.optString("Manual_SaleID", null)
+
+                    // Null handling: if "null" string or empty, set as null
+                    orderId = if (manualSaleId.isNullOrEmpty() || manualSaleId == "null") null else manualSaleId,
+
+                    // Additional fields
+                    sourceType = jsonObject.optString("SourceType", "AUTO"),
+                    iotOrderId = if (iotOrderId.isNullOrEmpty() || iotOrderId == "null") null else iotOrderId,
+                    transactionStatus = if (transactionStatus.isNullOrEmpty() || transactionStatus == "null") null else transactionStatus,
+                    posSaleId = if (posSaleId.isNullOrEmpty() || posSaleId == "null") null else posSaleId,
+
                 )
 
                 transactions.add(transaction)
             }
 
+            Log.d("SalesMainFragment", "Successfully parsed ${transactions.size} transactions")
+
         } catch (e: Exception) {
             e.printStackTrace()
+            Log.e("SalesMainFragment", "Error parsing JSON", e)
         }
 
         return transactions
@@ -295,34 +323,56 @@ class SalesMainFragment : Fragment() {
     }
 
     private fun setupSpinners() {
-        val stations = arrayOf("Select Station", "RIICO")
-        val stationAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, stations)
+        // Station Spinner
+        val stations = arrayOf("Select Station", "riico")
+        val stationAdapter = ArrayAdapter(
+            requireContext(),
+            R.layout.spinner_selected_item,  // Selected item layout
+            stations
+        )
+        stationAdapter.setDropDownViewResource(R.layout.spinner_item)  // Dropdown item layout
         spinnerStation.adapter = stationAdapter
         spinnerStation.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             @RequiresApi(Build.VERSION_CODES.M)
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                // Make selected text black
+                (view as? TextView)?.setTextColor(resources.getColor(android.R.color.black, requireActivity().theme))
                 validateManualForm()
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
-        val dispensers = arrayOf("Select Dispenser", "Dispenser1", "Dispenser2")
-        val dispenserAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, dispensers)
+        // Dispenser Spinner
+        val dispensers = arrayOf("Select Dispenser", "Dispenser1", "Dispenser2", "Dispenser3", "Dispenser4")
+        val dispenserAdapter = ArrayAdapter(
+            requireContext(),
+            R.layout.spinner_selected_item,
+            dispensers
+        )
+        dispenserAdapter.setDropDownViewResource(R.layout.spinner_item)
         spinnerDispenser.adapter = dispenserAdapter
         spinnerDispenser.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             @RequiresApi(Build.VERSION_CODES.M)
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                (view as? TextView)?.setTextColor(resources.getColor(android.R.color.black, requireActivity().theme))
                 validateManualForm()
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
+        // Nozzle Spinner
         val nozzles = arrayOf("Select Nozzle", "Side A", "Side B")
-        val nozzleAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, nozzles)
+        val nozzleAdapter = ArrayAdapter(
+            requireContext(),
+            R.layout.spinner_selected_item,
+            nozzles
+        )
+        nozzleAdapter.setDropDownViewResource(R.layout.spinner_item)
         spinnerNozzle.adapter = nozzleAdapter
         spinnerNozzle.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             @RequiresApi(Build.VERSION_CODES.M)
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                (view as? TextView)?.setTextColor(resources.getColor(android.R.color.black, requireActivity().theme))
                 validateManualForm()
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
@@ -357,16 +407,33 @@ class SalesMainFragment : Fragment() {
         }
 
         // Auto Sales - Confirm Selection
+        // ✅ REPLACE ONLY THE btnConfirmSelection.setOnClickListener BLOCK
+// Keep everything else in your file same
+
         btnConfirmSelection.setOnClickListener {
             selectedTransaction?.let { transaction ->
+                // ✅ Use safe helper method
+                val iotOrderId = transaction.getIotOrderIdAsInt()
+                val manualSaleId = transaction.getManualSaleIdAsInt()
+
+                Log.d(TAG, "Selected: IOT=$iotOrderId, Manual=$manualSaleId")
+
+                // ✅ Validate
+                if (transaction.isAutomatic() && iotOrderId == 0) {
+                    Toast.makeText(requireContext(), "Error: Invalid IOT Order ID", Toast.LENGTH_LONG).show()
+                    return@let
+                }
+
                 navigateToTransactionPreview(
-                    transactionType = "Automatic",
+                    transactionType = if (transaction.isAutomatic()) "Automatic" else "Manual",
                     dispenser = transaction.dispenserId,
                     nozzle = transaction.nozzleId,
                     quantity = transaction.quantity,
                     pricePerKg = transaction.pricePerKg,
-                    isManual = false,
-                    saleId = transaction.orderId ?: ""
+                    isManual = transaction.isManual(),
+                    saleId = transaction.orderId ?: "",
+                    iotOrderId = iotOrderId,
+                    manualSaleId = manualSaleId
                 )
             }
         }
@@ -415,6 +482,9 @@ class SalesMainFragment : Fragment() {
                         val data = result.optJSONObject("data")
                         val saleId = data?.optString("id") ?: ""
 
+                        // ✅ Parse Manual Sale ID as integer
+                        val manualSaleIdInt = saleId.toIntOrNull() ?: -1
+
                         Toast.makeText(requireContext(), "Sale created successfully!", Toast.LENGTH_SHORT).show()
 
                         navigateToTransactionPreview(
@@ -424,7 +494,9 @@ class SalesMainFragment : Fragment() {
                             quantity = quantity.toString(),
                             pricePerKg = GAS_RATE.toString(),
                             isManual = true,
-                            saleId = saleId
+                            saleId = saleId,
+                            iotOrderId = 0,                 // ✅ 0 for manual transactions
+                            manualSaleId = manualSaleIdInt  // ✅ Pass Manual Sale ID
                         )
                     } else {
                         val message = result.optString("message", "Failed to create sale")
@@ -444,6 +516,7 @@ class SalesMainFragment : Fragment() {
         }
     }
 
+
     private fun navigateToTransactionPreview(
         transactionType: String,
         dispenser: String,
@@ -451,14 +524,18 @@ class SalesMainFragment : Fragment() {
         quantity: String,
         pricePerKg: String,
         isManual: Boolean,
-        saleId: String
+        saleId: String,
+        iotOrderId: Int = 0,        // ✅ ADD: Default 0 for manual transactions
+        manualSaleId: Int = -1      // ✅ ADD: Default -1 means not set
     ) {
         val action = SalesMainFragmentDirections.actionSalesMainFragmentToTransactionPreviewFragment(
-            transactionType,
-            dispenser,
-            nozzle,
-            quantity,
-            pricePerKg
+            transactionType = transactionType,
+            dispenser = dispenser,
+            nozzle = nozzle,
+            quantity = quantity,
+            pricePerKg = pricePerKg,
+            iotOrderId = iotOrderId,        // ✅ Pass IOT Order ID
+            manualSaleId = manualSaleId     // ✅ Pass Manual Sale ID
         )
         findNavController().navigate(action)
     }

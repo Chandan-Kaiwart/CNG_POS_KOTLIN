@@ -1,14 +1,14 @@
 package com.rsgl.cngpos.pos.adapter
 
-import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.annotation.RequiresApi
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.rsgl.cngpos.R
+
 import com.rsgl.cngpos.pos.model.SaleTransaction
 
 class SalesTransactionAdapter(
@@ -16,45 +16,91 @@ class SalesTransactionAdapter(
     private val onItemClick: (SaleTransaction) -> Unit
 ) : RecyclerView.Adapter<SalesTransactionAdapter.TransactionViewHolder>() {
 
-    private var selectedPosition = RecyclerView.NO_POSITION
+    private var selectedPosition = -1
 
-    inner class TransactionViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val cardView: CardView = itemView.findViewById(R.id.cardTransaction)
-        val tvOrderId: TextView = itemView.findViewById(R.id.tvOrderId)
-        val tvDateTime: TextView = itemView.findViewById(R.id.tvDateTime)
-        val tvDispenser: TextView = itemView.findViewById(R.id.tvDispenser)
-        val tvNozzle: TextView = itemView.findViewById(R.id.tvNozzle)
-        val tvQuantity: TextView = itemView.findViewById(R.id.tvQuantity)
-        val tvAmount: TextView = itemView.findViewById(R.id.tvAmount)
+    inner class TransactionViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val cardTransaction: CardView = view.findViewById(R.id.cardTransaction)
+        val tvPosSaleId: TextView = view.findViewById(R.id.tvPosSaleId)
+        val tvDateTime: TextView = view.findViewById(R.id.tvDateTime)
+        val tvTransactionStatus: TextView = view.findViewById(R.id.tvTransactionStatus)
+        val tvDispenser: TextView = view.findViewById(R.id.tvDispenser)
+        val tvNozzle: TextView = view.findViewById(R.id.tvNozzle)
+        val tvQuantity: TextView = view.findViewById(R.id.tvQuantity)
+        val tvAmount: TextView = view.findViewById(R.id.tvAmount)
 
-        @RequiresApi(Build.VERSION_CODES.M)
+        // Conditional layouts
+        val layoutIotOrderId: LinearLayout = view.findViewById(R.id.layoutIotOrderId)
+        val tvIotOrderId: TextView = view.findViewById(R.id.tvIotOrderId)
+        val layoutManualSaleId: LinearLayout = view.findViewById(R.id.layoutManualSaleId)
+        val tvManualSaleId: TextView = view.findViewById(R.id.tvManualSaleId)
+
         fun bind(transaction: SaleTransaction, position: Int) {
-            tvOrderId.text = "Order #${transaction.orderId ?: "N/A"}"
-            tvDateTime.text = "${transaction.date} ${transaction.time}"
+            // POS Sale ID
+            tvPosSaleId.text = "Sale #${transaction.posSaleId ?: "N/A"}"
+
+            // Date Time
+            tvDateTime.text = transaction.date
+
+            // Dispenser & Nozzle
             tvDispenser.text = "Dispenser: ${transaction.dispenserId}"
             tvNozzle.text = "Nozzle: ${transaction.nozzleId}"
+
+            // Quantity & Amount
             tvQuantity.text = "${transaction.quantity} KG"
             tvAmount.text = "₹${transaction.amount}"
 
-            // Highlight selected item
-            if (selectedPosition == position) {
-                cardView.setCardBackgroundColor(itemView.context.getColor(R.color.primary_blue))
-                tvOrderId.setTextColor(itemView.context.getColor(android.R.color.white))
-                tvDateTime.setTextColor(itemView.context.getColor(android.R.color.white))
-                tvDispenser.setTextColor(itemView.context.getColor(android.R.color.white))
-                tvNozzle.setTextColor(itemView.context.getColor(android.R.color.white))
-                tvQuantity.setTextColor(itemView.context.getColor(android.R.color.white))
-                tvAmount.setTextColor(itemView.context.getColor(android.R.color.white))
+            // Transaction Status - show only if not null
+            if (!transaction.transactionStatus.isNullOrEmpty()) {
+                tvTransactionStatus.visibility = View.VISIBLE
+                tvTransactionStatus.text = transaction.transactionStatus
+
+                // Color coding based on status
+                when (transaction.transactionStatus.uppercase()) {
+                    "PENDING" -> {
+                        tvTransactionStatus.setBackgroundResource(R.drawable.badge_pending)
+                    }
+                    "SUCCESS", "COMPLETED" -> {
+                        tvTransactionStatus.setBackgroundResource(R.drawable.badge_success)
+                    }
+                    "FAILED", "CANCELLED" -> {
+                        tvTransactionStatus.setBackgroundResource(R.drawable.badge_failed)
+                    }
+                    else -> {
+                        tvTransactionStatus.setBackgroundResource(R.drawable.badge_pending)
+                    }
+                }
             } else {
-                cardView.setCardBackgroundColor(itemView.context.getColor(android.R.color.white))
-                tvOrderId.setTextColor(itemView.context.getColor(R.color.text_dark))
-                tvDateTime.setTextColor(itemView.context.getColor(R.color.text_gray))
-                tvDispenser.setTextColor(itemView.context.getColor(R.color.text_dark))
-                tvNozzle.setTextColor(itemView.context.getColor(R.color.text_gray))
-                tvQuantity.setTextColor(itemView.context.getColor(R.color.primary_blue))
-                tvAmount.setTextColor(itemView.context.getColor(R.color.success_green))
+                tvTransactionStatus.visibility = View.GONE
             }
 
+            // IOT Order ID - show only if not null
+            if (!transaction.iotOrderId.isNullOrEmpty()) {
+                layoutIotOrderId.visibility = View.VISIBLE
+                tvIotOrderId.text = transaction.iotOrderId
+            } else {
+                layoutIotOrderId.visibility = View.GONE
+            }
+
+            // Manual Sale ID - show only if not null
+            if (!transaction.orderId.isNullOrEmpty()) {
+                layoutManualSaleId.visibility = View.VISIBLE
+                tvManualSaleId.text = transaction.orderId
+            } else {
+                layoutManualSaleId.visibility = View.GONE
+            }
+
+            // Selection highlight
+            if (position == selectedPosition) {
+                cardTransaction.setCardBackgroundColor(
+                    itemView.context.getColor(R.color.selection_blue)
+                )
+            } else {
+                cardTransaction.setCardBackgroundColor(
+                    itemView.context.getColor(android.R.color.white)
+                )
+            }
+
+            // Click listener
             itemView.setOnClickListener {
                 val previousPosition = selectedPosition
                 selectedPosition = position
@@ -71,16 +117,9 @@ class SalesTransactionAdapter(
         return TransactionViewHolder(view)
     }
 
-    @RequiresApi(Build.VERSION_CODES.M)
     override fun onBindViewHolder(holder: TransactionViewHolder, position: Int) {
         holder.bind(transactions[position], position)
     }
 
     override fun getItemCount() = transactions.size
-
-    fun getSelectedTransaction(): SaleTransaction? {
-        return if (selectedPosition != RecyclerView.NO_POSITION) {
-            transactions[selectedPosition]
-        } else null
-    }
 }

@@ -1,5 +1,7 @@
 package com.rsgl.cngpos.payment
 
+import com.rsgl.cngpos.payment.dataclass.UpdatePaymentStatusRequest
+import com.rsgl.cngpos.payment.dataclass.UpdatePaymentStatusResponse
 import com.rsgl.cngpos.payment.utils.OrderResponse
 import okhttp3.RequestBody
 import retrofit2.Response
@@ -17,6 +19,20 @@ interface PhonePeApiService {
     @GET("pos/get_phonepe_token.php")
     suspend fun getPhonePeToken(): TokenResponse
 
+
+    // ✅ ALREADY EXISTS: Update payment status in database
+    @POST("pos/updatePaymentStatus.php")
+    @Headers("Content-Type: application/json")
+    suspend fun updatePaymentStatus(
+        @Body request: UpdatePaymentStatusRequest
+    ): UpdatePaymentStatusResponse
+
+    // ✅ ADD THIS: Check payment status from PhonePe
+    @POST("pos/get_phonepe_order_status.php")
+    @Headers("Content-Type: application/json")
+    suspend fun getPhonePeOrderStatus(
+        @Body request: CheckOrderStatusRequest
+    ): CheckOrderStatusResponse
 
     @POST
     @Headers("Content-Type: application/x-www-form-urlencoded")
@@ -115,5 +131,25 @@ data class CreateOrderResponse(
 
 data class ErrorContext(
     val description: String?
+)
 
+// ✅ ADD THESE NEW DATA CLASSES:
+data class CheckOrderStatusRequest(
+    val token: String,
+    val merchantOrderId: String
+)
+
+data class CheckOrderStatusResponse(
+    val success: Boolean,
+    val message: String?,
+    val data: OrderStatusData?
+)
+
+data class OrderStatusData(
+    val orderId: String,
+    val merchantOrderId: String,
+    val state: String,
+    val amount: Long?,
+    val transactionId: String?,
+    val paymentDetails: List<PaymentDetail>?
 )
