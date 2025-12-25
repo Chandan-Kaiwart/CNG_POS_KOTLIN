@@ -52,11 +52,9 @@ class PhonePeRepository(
             response
 
         } catch (e: retrofit2.HttpException) {
-            // Parse error response body
             val errorBody = e.response()?.errorBody()?.string()
             Log.e(TAG, "HTTP ${e.code()} Error: $errorBody")
 
-            // If ORDER_NOT_FOUND, return NotFound instead of error
             if (errorBody?.contains("ORDER_NOT_FOUND") == true) {
                 CheckOrderStatusResponse(
                     success = false,
@@ -81,7 +79,7 @@ class PhonePeRepository(
         }
     }
 
-    // ✅ Update payment status in database
+    // ✅ FIXED: Update payment status in database with proper null handling
     suspend fun updatePaymentStatusInDb(
         iotOrderId: Int?,
         manualSaleId: Int?,
@@ -90,6 +88,16 @@ class PhonePeRepository(
         amountPaid: Double?
     ): UpdatePaymentStatusResponse {
         return try {
+            // ✅ Validate that at least one ID is provided
+            if (iotOrderId == null && manualSaleId == null) {
+                Log.e(TAG, "❌ Cannot update: Both iotOrderId and manualSaleId are null")
+                return UpdatePaymentStatusResponse(
+                    success = false,
+                    message = "Either iot_order_id or manual_sale_id is required"
+                )
+            }
+
+            // ✅ Build request with only non-null values
             val request = UpdatePaymentStatusRequest(
                 iot_order_id = iotOrderId,
                 manual_sale_id = manualSaleId,
@@ -98,13 +106,44 @@ class PhonePeRepository(
                 amount_paid = amountPaid
             )
 
-            Log.d(TAG, "Updating payment status: $request")
-            api.updatePaymentStatus(request)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error updating payment status", e)
+            Log.d(TAG, "========================================")
+            Log.d(TAG, "📤 UPDATING PAYMENT STATUS")
+            Log.d(TAG, "IOT Order ID: $iotOrderId")
+            Log.d(TAG, "Manual Sale ID: $manualSaleId")
+            Log.d(TAG, "Status: $status")
+            Log.d(TAG, "Transaction ID: $transactionId")
+            Log.d(TAG, "Amount Paid: ₹$amountPaid")
+            Log.d(TAG, "Request: $request")
+            Log.d(TAG, "========================================")
+
+            val response = api.updatePaymentStatus(request)
+
+            Log.d(TAG, "========================================")
+            Log.d(TAG, "📥 DB UPDATE RESPONSE")
+            Log.d(TAG, "Success: ${response.success}")
+            Log.d(TAG, "Message: ${response.message}")
+            Log.d(TAG, "Affected Rows: ${response.affected_rows}")
+            Log.d(TAG, "========================================")
+
+            response
+
+        } catch (e: retrofit2.HttpException) {
+            val errorBody = e.response()?.errorBody()?.string()
+            Log.e(TAG, "❌ HTTP Error updating payment status")
+            Log.e(TAG, "Status Code: ${e.code()}")
+            Log.e(TAG, "Error Body: $errorBody")
+
             UpdatePaymentStatusResponse(
                 success = false,
-                message = e.message ?: "Unknown error"
+                message = "HTTP ${e.code()}: $errorBody"
+            )
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Error updating payment status: ${e.message}")
+            e.printStackTrace()
+
+            UpdatePaymentStatusResponse(
+                success = false,
+                message = e.message ?: "Unknown error occurred"
             )
         }
     }
@@ -122,8 +161,8 @@ class PhonePeRepository(
 
         val body = CreateOrderRequest(
             token = token,
-            amount = (amount * 100).toInt(), // Convert to paisa
-            merchantOrderId = saleId  // ✅ FIXED: Use the provided saleId
+            amount = (amount * 100).toInt(),
+            merchantOrderId = saleId
         )
 
         Log.d(TAG, "Order request: amount=${body.amount} paisa, merchantOrderId=${body.merchantOrderId}")

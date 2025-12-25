@@ -37,7 +37,6 @@ class PaymentStatusRepository(
     }
 
     // Check order status with retry logic
-    // In PaymentStatusRepository.kt
     suspend fun checkOrderStatus(
         authToken: String,
         orderId: String
@@ -49,9 +48,13 @@ class PaymentStatusRepository(
                 merchantOrderId = orderId
             )
 
+            Log.d(TAG, "Checking order status for: $orderId")
+
             val response = api.getPhonePeOrderStatus(request)
 
             if (response.success && response.data != null) {
+                Log.d(TAG, "Order status response: ${response.data}")
+
                 // Convert to PhonePeStatusResponse
                 PhonePeStatusResponse(
                     orderId = response.data.orderId,
@@ -63,10 +66,15 @@ class PaymentStatusRepository(
                     errorContext = null
                 )
             } else {
+                Log.e(TAG, "Order status check failed: ${response.message}")
                 null
             }
+        } catch (e: HttpException) {
+            Log.e(TAG, "HTTP Error checking order status: ${e.code()} - ${e.message()}")
+            null
         } catch (e: Exception) {
-            Log.e("PaymentStatusRepo", "Error: ${e.message}")
+            Log.e(TAG, "Error checking order status: ${e.message}")
+            e.printStackTrace()
             null
         }
     }
@@ -116,20 +124,31 @@ class PaymentStatusRepository(
         }
     }
 
-    // Update payment status in database
+    // ✅ Update payment status in database
     suspend fun updatePaymentStatus(
         request: UpdatePaymentStatusRequest
     ): UpdatePaymentStatusResponse {
         return try {
-            // Convert amount from rupees to correct format if needed
-            val modifiedRequest = request.copy(
-                amount_paid = request.amount_paid // Already in correct format
+            Log.d(TAG, "Updating payment status with request: $request")
+
+            val response = api.updatePaymentStatus(request)
+
+            Log.d(TAG, "Update response: success=${response.success}, message=${response.message}")
+
+            response
+
+        } catch (e: HttpException) {
+            val errorBody = e.response()?.errorBody()?.string()
+            Log.e(TAG, "HTTP Error updating payment status: ${e.code()} - $errorBody")
+
+            UpdatePaymentStatusResponse(
+                success = false,
+                message = "HTTP ${e.code()}: $errorBody"
             )
-
-            api.updatePaymentStatus(modifiedRequest)
-
         } catch (e: Exception) {
             Log.e(TAG, "Error updating payment status: ${e.message}")
+            e.printStackTrace()
+
             UpdatePaymentStatusResponse(
                 success = false,
                 message = "Update failed: ${e.message}"
@@ -147,6 +166,7 @@ class PaymentStatusRepository(
         return updatePaymentStatus(
             UpdatePaymentStatusRequest(
                 iot_order_id = iotOrderId,
+                manual_sale_id = null,
                 status = status,
                 transaction_id = transactionId,
                 amount_paid = amountPaid
@@ -163,6 +183,7 @@ class PaymentStatusRepository(
     ): UpdatePaymentStatusResponse {
         return updatePaymentStatus(
             UpdatePaymentStatusRequest(
+                iot_order_id = null,
                 manual_sale_id = manualSaleId,
                 status = status,
                 transaction_id = transactionId,

@@ -24,9 +24,9 @@ import com.rsgl.cngpos.RetrofitClient
 import com.rsgl.cngpos.payment.PaymentViewModel
 import com.rsgl.cngpos.payment.PhonePeRepository
 import com.phonepe.intent.sdk.api.PhonePeKt
+import com.rsgl.cngpos.R
 import com.rsgl.cngpos.payment.PaymentStatusResult
 import com.rsgl.cngpos.payment.ExistingPaymentCheckResult
-import java.util.logging.Handler
 
 class TransactionPreviewFragment : Fragment() {
 
@@ -59,7 +59,8 @@ class TransactionPreviewFragment : Fragment() {
             Log.d(TAG, "========================================")
             Log.d(TAG, "PhonePe callback received")
             Log.d(TAG, "Result Code: ${result.resultCode}")
-            Log.d(TAG, "Order ID: $currentOrderId")
+            Log.d(TAG, "PhonePe Order ID: $currentOrderId")
+            Log.d(TAG, "Merchant Order ID (saleId): $saleId")
             Log.d(TAG, "========================================")
 
             hasCheckedStatus = true
@@ -70,15 +71,16 @@ class TransactionPreviewFragment : Fragment() {
                 Toast.LENGTH_SHORT
             ).show()
 
-            viewModel.checkPaymentStatus(currentOrderId)
+            viewModel.checkPaymentStatus(saleId)
         }
 
     private val TAG = "TransactionPreview"
     private var currentOrderId: String = ""
-    private var currentToken: String = ""  // ✅ Store token for manual opening
+    private var currentToken: String = ""
     private var hasCheckedStatus: Boolean = false
     private var phonePeToken: String = ""
-    private var orderAlreadyCreated: Boolean = false  // ✅ Track if order is created
+    private var orderAlreadyCreated: Boolean = false
+    private var isPaymentAlreadyCompleted: Boolean = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -95,19 +97,16 @@ class TransactionPreviewFragment : Fragment() {
         loadTransactionData()
         setupButtons()
         observePaymentEvents()
-
-        // ✅ AUTO ORDER CREATION (but don't open PhonePe)
-        checkAndAutoCreateOrder()
-
         observePaymentStatus()
+        observeDbUpdateStatus()
 
-
+        checkAndAutoCreateOrder()
     }
 
     override fun onResume() {
         super.onResume()
 
-        if (currentOrderId.isNotEmpty() && !hasCheckedStatus) {
+        if (currentOrderId.isNotEmpty() && !hasCheckedStatus && !isPaymentAlreadyCompleted) {
             Log.d(TAG, "========================================")
             Log.d(TAG, "Fragment resumed - checking payment status")
             Log.d(TAG, "Order ID: $currentOrderId")
@@ -124,60 +123,134 @@ class TransactionPreviewFragment : Fragment() {
         }
     }
 
-
     private fun observePaymentStatus() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.paymentStatusEvent.collect { result ->
                 when (result) {
                     is PaymentStatusResult.Success -> {
                         Log.d(TAG, "✅ PAYMENT SUCCESS")
+                        Log.d(TAG, "Transaction ID: ${result.transactionId}")
+                        Log.d(TAG, "Amount: ₹${result.amount}")
+
+                        // ✅ FIXED: Properly validate and pass IDs
+                        val updateIotOrderId = if (iotOrderId > 0) iotOrderId else null
+                        val updateManualSaleId = if (manualSaleId > 0) manualSaleId else null
+
+                        Log.d(TAG, "Updating DB - IOT: $updateIotOrderId, Manual: $updateManualSaleId")
 
                         viewModel.updatePaymentStatusInDb(
-                            iotOrderId = if (iotOrderId > 0) iotOrderId else null,
-                            manualSaleId = if (manualSaleId > 0) manualSaleId else null,
+                            iotOrderId = updateIotOrderId,
+                            manualSaleId = updateManualSaleId,
                             status = "PAID",
-                            transactionId = result.transactionId,
+                            transactionId = result.transactionId ?: "PHONEPE_${System.currentTimeMillis()}",
                             amountPaid = result.amount
                         )
 
-                        Toast.makeText(requireContext(), "Payment Successful! ₹${result.amount}", Toast.LENGTH_LONG).show()
+                        isPaymentAlreadyCompleted = true
+                        binding.btnPayPhonePe.isEnabled = false
+                        binding.btnPayPhonePe.text = "Payment Completed ✓"
+
+                        Toast.makeText(
+                            requireContext(),
+                            "✅ Payment Successful! ₹${result.amount}",
+                            Toast.LENGTH_LONG
+                        ).show()
 
                         android.os.Handler(Looper.getMainLooper()).postDelayed({
-                            findNavController().navigateUp()
-                        }, 2000)
+                            navigateToSuccessScreen(result)  // Navigate to success screen
+                        }, 1500)
                     }
 
                     is PaymentStatusResult.Failed -> {
-                        Log.e(TAG, "❌ PAYMENT FAILED")
+                        Log.e(TAG, "❌ PAYMENT FAILED: ${result.errorMessage}")
+
+                        // ✅ FIXED: Properly validate and pass IDs
+                        val updateIotOrderId = if (iotOrderId > 0) iotOrderId else null
+                        val updateManualSaleId = if (manualSaleId > 0) manualSaleId else null
 
                         viewModel.updatePaymentStatusInDb(
-                            iotOrderId = if (iotOrderId > 0) iotOrderId else null,
-                            manualSaleId = if (manualSaleId > 0) manualSaleId else null,
+                            iotOrderId = updateIotOrderId,
+                            manualSaleId = updateManualSaleId,
                             status = "FAILED",
-                            transactionId = null,
+                            transactionId = currentOrderId,
                             amountPaid = null
                         )
 
-                        Toast.makeText(requireContext(), "Payment Failed", Toast.LENGTH_LONG).show()
+                        binding.btnPayPhonePe.isEnabled = true
+                        binding.btnPayPhonePe.text = "Retry Payment"
+
+                        Toast.makeText(
+                            requireContext(),
+                            "❌ Payment Failed: ${result.errorMessage}",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+
+                    is PaymentStatusResult.Pending -> {
+                        Log.w(TAG, "⏳ PAYMENT PENDING")
+
+                        // ✅ FIXED: Properly validate and pass IDs
+                        val updateIotOrderId = if (iotOrderId > 0) iotOrderId else null
+                        val updateManualSaleId = if (manualSaleId > 0) manualSaleId else null
+
+                        viewModel.updatePaymentStatusInDb(
+                            iotOrderId = updateIotOrderId,
+                            manualSaleId = updateManualSaleId,
+                            status = "PENDING",
+                            transactionId = result.orderId,
+                            amountPaid = null
+                        )
+
+                        binding.btnPayPhonePe.isEnabled = true
+                        binding.btnPayPhonePe.text = "Complete Payment"
+
+                        Toast.makeText(
+                            requireContext(),
+                            "⏳ Payment is pending\nPlease check your UPI app",
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
 
                     is PaymentStatusResult.Error -> {
                         Log.e(TAG, "💥 ERROR: ${result.message}")
 
-                        viewModel.updatePaymentStatusInDb(
-                            iotOrderId = if (iotOrderId > 0) iotOrderId else null,
-                            manualSaleId = if (manualSaleId > 0) manualSaleId else null,
-                            status = "FAILED",
-                            transactionId = null,
-                            amountPaid = null
-                        )
+                        binding.btnPayPhonePe.isEnabled = true
+                        binding.btnPayPhonePe.text = "Retry Payment"
+
+                        Toast.makeText(
+                            requireContext(),
+                            "⚠️ Error: ${result.message}",
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
 
-                    else -> { /* Handle other cases */ }
+                    else -> { }
                 }
             }
         }
     }
+
+    private fun observeDbUpdateStatus() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.dbUpdateStatus.collect { response ->
+                response?.let {
+                    if (it.success) {
+                        Log.d(TAG, "✅ DB Update Success: ${it.message}")
+                        Log.d(TAG, "Affected Rows: ${it.affected_rows}")
+                        Log.d(TAG, "Updated Record: ${it.updated_record}")
+                    } else {
+                        Log.e(TAG, "❌ DB Update Failed: ${it.message}")
+                        Toast.makeText(
+                            requireContext(),
+                            "Warning: DB update failed - ${it.message}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            }
+        }
+    }
+
     private fun loadTransactionData() {
         val args = TransactionPreviewFragmentArgs.fromBundle(requireArguments())
         transactionType = args.transactionType
@@ -190,13 +263,15 @@ class TransactionPreviewFragment : Fragment() {
 
         iotOrderId = args.iotOrderId
         manualSaleId = args.manualSaleId
+
         if (iotOrderId == 0 && manualSaleId == -1) {
             Log.e(TAG, "⚠️ WARNING: Both IOT and Manual Sale IDs are invalid!")
-            Log.e(TAG, "Database update will FAIL!")
+            Toast.makeText(
+                requireContext(),
+                "Error: No valid sale ID found!",
+                Toast.LENGTH_LONG
+            ).show()
         }
-
-        Log.d(TAG, "IOT Order ID: $iotOrderId")
-        Log.d(TAG, "Manual Sale ID: $manualSaleId")
 
         Log.d(TAG, "Transaction Data Loaded:")
         Log.d(TAG, "Type: $transactionType")
@@ -220,7 +295,6 @@ class TransactionPreviewFragment : Fragment() {
         binding.tvTotalAmount.text = currencyFormat.format(totalAmount)
     }
 
-    // ✅ AUTO ORDER CREATION (but DON'T open PhonePe automatically)
     private fun checkAndAutoCreateOrder() {
         lifecycleScope.launch {
             try {
@@ -229,17 +303,14 @@ class TransactionPreviewFragment : Fragment() {
                 Log.d(TAG, "Merchant Order ID: $saleId")
                 Log.d(TAG, "========================================")
 
-                // Show loading state
                 binding.btnPayPhonePe.isEnabled = false
                 binding.btnPayPhonePe.text = "Checking..."
 
-                // Get PhonePe token
                 Log.d(TAG, "Step 1: Getting PhonePe token...")
                 val tokenResponse = RetrofitClient.phonePeApi.getPhonePeToken()
                 phonePeToken = tokenResponse.access_token
                 Log.d(TAG, "✅ Token received")
 
-                // Check if payment already exists
                 Log.d(TAG, "Step 2: Checking if order already exists...")
                 viewModel.checkExistingPayment(phonePeToken, saleId)
 
@@ -258,7 +329,6 @@ class TransactionPreviewFragment : Fragment() {
     }
 
     private fun observePaymentEvents() {
-        // ✅ Collect payment order creation event (DON'T auto-open PhonePe)
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.paymentEvent.collect { response ->
                 Log.d(TAG, "========================================")
@@ -268,13 +338,11 @@ class TransactionPreviewFragment : Fragment() {
                 Log.d(TAG, "State = ${response.state}")
                 Log.d(TAG, "========================================")
 
-                // ✅ Store order details but DON'T open PhonePe
                 currentOrderId = response.orderId
                 currentToken = response.token
                 orderAlreadyCreated = true
                 hasCheckedStatus = false
 
-                // ✅ Enable button for manual opening
                 binding.btnPayPhonePe.isEnabled = true
                 binding.btnPayPhonePe.text = "Pay with PhonePe"
 
@@ -282,17 +350,6 @@ class TransactionPreviewFragment : Fragment() {
             }
         }
 
-        // Collect payment status check result (after PhonePe payment)
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.paymentStatusEvent.collect { result ->
-                result?.let {
-                    Log.d(TAG, "Payment status received: $it")
-                    handlePaymentStatus(it)
-                }
-            }
-        }
-
-        // ✅ Collect existing payment check result
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.existingPaymentStatus.collect { result ->
                 result?.let {
@@ -303,7 +360,6 @@ class TransactionPreviewFragment : Fragment() {
         }
     }
 
-    // ✅ Handle existing payment status
     private fun handleExistingPaymentStatus(result: ExistingPaymentCheckResult) {
         when (result) {
             is ExistingPaymentCheckResult.AlreadyPaid -> {
@@ -313,15 +369,19 @@ class TransactionPreviewFragment : Fragment() {
                 Log.d(TAG, "Amount: ₹${result.amount}")
                 Log.d(TAG, "========================================")
 
-                // Update database with PAID status
+                // ✅ FIXED: Properly validate and pass IDs
+                val updateIotOrderId = if (iotOrderId > 0) iotOrderId else null
+                val updateManualSaleId = if (manualSaleId > 0) manualSaleId else null
+
                 viewModel.updatePaymentStatusInDb(
-                    iotOrderId = if (iotOrderId > 0) iotOrderId else null,
-                    manualSaleId = if (manualSaleId > 0) manualSaleId else null,
+                    iotOrderId = updateIotOrderId,
+                    manualSaleId = updateManualSaleId,
                     status = "PAID",
                     transactionId = result.transactionId,
                     amountPaid = result.amount
                 )
 
+                isPaymentAlreadyCompleted = true
                 binding.btnPayPhonePe.isEnabled = false
                 binding.btnPayPhonePe.text = "Already Paid ✓"
 
@@ -331,7 +391,6 @@ class TransactionPreviewFragment : Fragment() {
                     Toast.LENGTH_LONG
                 ).show()
 
-                // Navigate back after 2 seconds
                 binding.root.postDelayed({
                     requireActivity().onBackPressedDispatcher.onBackPressed()
                 }, 2000)
@@ -339,6 +398,19 @@ class TransactionPreviewFragment : Fragment() {
 
             is ExistingPaymentCheckResult.Pending -> {
                 Log.d(TAG, "⏳ Payment is PENDING")
+
+                // ✅ FIXED: Properly validate and pass IDs
+                val updateIotOrderId = if (iotOrderId > 0) iotOrderId else null
+                val updateManualSaleId = if (manualSaleId > 0) manualSaleId else null
+
+                viewModel.updatePaymentStatusInDb(
+                    iotOrderId = updateIotOrderId,
+                    manualSaleId = updateManualSaleId,
+                    status = "PENDING",
+                    transactionId = currentOrderId,
+                    amountPaid = null
+                )
+
                 binding.btnPayPhonePe.isEnabled = true
                 binding.btnPayPhonePe.text = "Complete Payment"
 
@@ -351,6 +423,19 @@ class TransactionPreviewFragment : Fragment() {
 
             is ExistingPaymentCheckResult.Failed -> {
                 Log.d(TAG, "❌ Previous payment FAILED")
+
+                // ✅ FIXED: Properly validate and pass IDs
+                val updateIotOrderId = if (iotOrderId > 0) iotOrderId else null
+                val updateManualSaleId = if (manualSaleId > 0) manualSaleId else null
+
+                viewModel.updatePaymentStatusInDb(
+                    iotOrderId = updateIotOrderId,
+                    manualSaleId = updateManualSaleId,
+                    status = "FAILED",
+                    transactionId = currentOrderId,
+                    amountPaid = null
+                )
+
                 binding.btnPayPhonePe.isEnabled = true
                 binding.btnPayPhonePe.text = "Retry Payment"
 
@@ -362,7 +447,6 @@ class TransactionPreviewFragment : Fragment() {
             }
 
             is ExistingPaymentCheckResult.NotFound -> {
-                // ✅ AUTO ORDER CREATION (but DON'T open PhonePe)
                 Log.d(TAG, "========================================")
                 Log.d(TAG, "🆕 NO EXISTING PAYMENT FOUND")
                 Log.d(TAG, "📦 CREATING ORDER...")
@@ -370,7 +454,6 @@ class TransactionPreviewFragment : Fragment() {
 
                 binding.btnPayPhonePe.text = "Creating order..."
 
-                // Create order but DON'T open PhonePe
                 viewModel.startPayment(
                     amount = totalAmount,
                     saleId = saleId
@@ -391,111 +474,6 @@ class TransactionPreviewFragment : Fragment() {
         }
     }
 
-    private fun handlePaymentStatus(result: PaymentStatusResult) {
-        when (result) {
-            is PaymentStatusResult.Success -> {
-                Log.d(TAG, "========================================")
-                Log.d(TAG, "✅ PAYMENT SUCCESSFUL")
-                Log.d(TAG, "Transaction ID: ${result.transactionId}")
-                Log.d(TAG, "Amount: ₹${result.amount}")
-                Log.d(TAG, "========================================")
-
-                viewModel.updatePaymentStatusInDb(
-                    iotOrderId = if (iotOrderId > 0) iotOrderId else null,
-                    manualSaleId = if (manualSaleId > 0) manualSaleId else null,
-                    status = "PAID",
-                    transactionId = result.transactionId,
-                    amountPaid = result.amount
-                )
-
-                Toast.makeText(
-                    requireContext(),
-                    "✅ Payment Successful!\n₹${result.amount}",
-                    Toast.LENGTH_LONG
-                ).show()
-
-                binding.root.postDelayed({
-                    requireActivity().onBackPressedDispatcher.onBackPressed()
-                }, 2000)
-            }
-
-            is PaymentStatusResult.Failed -> {
-                Log.e(TAG, "========================================")
-                Log.e(TAG, "❌ PAYMENT FAILED")
-                Log.e(TAG, "Reason: ${result.errorMessage}")
-                Log.e(TAG, "========================================")
-
-                viewModel.updatePaymentStatusInDb(
-                    iotOrderId = if (iotOrderId > 0) iotOrderId else null,
-                    manualSaleId = if (manualSaleId > 0) manualSaleId else null,
-                    status = "FAILED",
-                    transactionId = null,
-                    amountPaid = null
-                )
-
-                Toast.makeText(
-                    requireContext(),
-                    "❌ Payment Failed\n${result.errorMessage}",
-                    Toast.LENGTH_LONG
-                ).show()
-            }
-
-            is PaymentStatusResult.Pending -> {
-                Log.w(TAG, "⏳ PAYMENT PENDING")
-
-                viewModel.updatePaymentStatusInDb(
-                    iotOrderId = if (iotOrderId > 0) iotOrderId else null,
-                    manualSaleId = if (manualSaleId > 0) manualSaleId else null,
-                    status = "PENDING",
-                    transactionId = result.orderId,
-                    amountPaid = null
-                )
-
-                Toast.makeText(
-                    requireContext(),
-                    "⏳ Payment is pending\nPlease check your UPI app",
-                    Toast.LENGTH_LONG
-                ).show()
-            }
-
-            is PaymentStatusResult.Unknown -> {
-                Log.w(TAG, "❓ PAYMENT STATUS UNKNOWN")
-
-                viewModel.updatePaymentStatusInDb(
-                    iotOrderId = if (iotOrderId > 0) iotOrderId else null,
-                    manualSaleId = if (manualSaleId > 0) manualSaleId else null,
-                    status = "PENDING",
-                    transactionId = result.orderId,
-                    amountPaid = null
-                )
-
-                Toast.makeText(
-                    requireContext(),
-                    "❓ Payment status unknown\nPlease verify manually",
-                    Toast.LENGTH_LONG
-                ).show()
-            }
-
-            is PaymentStatusResult.Error -> {
-                Log.e(TAG, "💥 ERROR CHECKING STATUS: ${result.message}")
-
-                viewModel.updatePaymentStatusInDb(
-                    iotOrderId = if (iotOrderId > 0) iotOrderId else null,
-                    manualSaleId = if (manualSaleId > 0) manualSaleId else null,
-                    status = "FAILED",
-                    transactionId = null,
-                    amountPaid = null
-                )
-
-                Toast.makeText(
-                    requireContext(),
-                    "⚠️ Error: ${result.message}",
-                    Toast.LENGTH_LONG
-                ).show()
-            }
-        }
-    }
-
     private fun generateOrderId(): String {
         val timestamp = System.currentTimeMillis()
         val random = (100000..999999).random()
@@ -507,19 +485,27 @@ class TransactionPreviewFragment : Fragment() {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
 
-        // ✅ Button click se PhonePe khulega
         binding.btnPayPhonePe.setOnClickListener {
             Log.d(TAG, "========================================")
-            Log.d(TAG, "🔘 PAY BUTTON CLICKED")
+            Log.d(TAG, "📘 PAY BUTTON CLICKED")
+            Log.d(TAG, "Payment already completed: $isPaymentAlreadyCompleted")
             Log.d(TAG, "Order already created: $orderAlreadyCreated")
             Log.d(TAG, "========================================")
 
+            // ✅ PREVENT RE-PAYMENT if already completed
+            if (isPaymentAlreadyCompleted) {
+                Toast.makeText(
+                    requireContext(),
+                    "Payment already completed!",
+                    Toast.LENGTH_SHORT
+                ).show()
+                return@setOnClickListener
+            }
+
             if (orderAlreadyCreated && currentOrderId.isNotEmpty() && currentToken.isNotEmpty()) {
-                // ✅ Order already created, just open PhonePe
                 Log.d(TAG, "Opening PhonePe with existing order")
                 openPhonePe(currentOrderId, currentToken)
             } else {
-                // Order not created yet, create it first
                 Log.d(TAG, "Order not ready, creating now...")
                 binding.btnPayPhonePe.isEnabled = false
                 binding.btnPayPhonePe.text = "Creating order..."
@@ -557,6 +543,30 @@ class TransactionPreviewFragment : Fragment() {
             ).show()
             e.printStackTrace()
         }
+    }
+
+    private fun navigateToSuccessScreen(result: PaymentStatusResult.Success) {
+        val bundle = Bundle().apply {
+            putString("orderId", saleId) // Merchant Order ID
+            putString("transactionId", result.transactionId ?: "")
+            putString("paymentMode", "UPI (PhonePe)")
+
+            // Format date time
+            val sdf = SimpleDateFormat("dd/MM/yyyy hh:mm:ss a", Locale.getDefault())
+            putString("dateTime", sdf.format(Date()))
+
+            putString("dispenser", dispenser)
+            putString("nozzle", nozzle)
+            putString("fuelType", "CNG")
+            putDouble("quantity", quantity)
+            putDouble("pricePerKg", pricePerKg)
+            putDouble("totalPaid", result.amount)
+        }
+
+        findNavController().navigate(
+            R.id.action_transactionPreview_to_transactionSuccess,
+            bundle
+        )
     }
 
     override fun onDestroyView() {

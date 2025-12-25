@@ -34,6 +34,12 @@
             android:name="com.rsgl.cngpos.pos.TransactionPreviewFragment"
             android:label="Transaction Preview">
 
+            <!-- ADD THIS ACTION -->
+            <action
+                android:id="@+id/action_transactionPreview_to_transactionSuccess"
+                app:destination="@id/transactionSuccessFragment"
+                app:popUpTo="@id/salesMainFragment"
+                app:popUpToInclusive="false" />
             <!-- Arguments -->
             <argument
                 android:name="transactionType"
@@ -61,5 +67,50 @@
                  />
 
         </fragment>
+
+    <fragment
+        android:id="@+id/transactionSuccessFragment"
+        android:name="com.rsgl.cngpos.pos.TransactionSuccessFragment"
+        android:label="Transaction Success">
+
+        <action
+            android:id="@+id/action_transactionSuccess_to_home"
+            app:destination="@id/salesMainFragment"
+            app:popUpTo="@id/salesMainFragment"
+            app:popUpToInclusive="false" />
+
+        <argument
+            android:name="orderId"
+            app:argType="string" />
+        <argument
+            android:name="transactionId"
+            app:argType="string" />
+        <argument
+            android:name="paymentMode"
+            app:argType="string"
+            android:defaultValue="UPI (PhonePe)" />
+        <argument
+            android:name="dateTime"
+            app:argType="string" />
+        <argument
+            android:name="dispenser"
+            app:argType="string" />
+        <argument
+            android:name="nozzle"
+            app:argType="string" />
+        <argument
+            android:name="fuelType"
+            app:argType="string"
+            android:defaultValue="CNG" />
+        <argument
+            android:name="quantity"
+            app:argType="float" />
+        <argument
+            android:name="pricePerKg"
+            app:argType="float" />
+        <argument
+            android:name="totalPaid"
+            app:argType="float" />
+    </fragment>
 
 </navigation>

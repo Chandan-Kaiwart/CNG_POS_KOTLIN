@@ -3,6 +3,7 @@ package com.rsgl.cngpos.payment
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.rsgl.cngpos.payment.dataclass.UpdatePaymentStatusResponse
 import com.rsgl.cngpos.payment.utils.OrderResponse
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -10,6 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 
 
 class PaymentViewModel(
@@ -25,6 +27,10 @@ class PaymentViewModel(
     // ✅ Payment status flow
     private val _paymentStatusEvent = MutableStateFlow<PaymentStatusResult?>(null)
     val paymentStatusEvent = _paymentStatusEvent.asStateFlow()
+
+    // ✅ DB update status flow
+    private val _dbUpdateStatus = MutableStateFlow<UpdatePaymentStatusResponse?>(null)
+    val dbUpdateStatus = _dbUpdateStatus.asStateFlow()
 
     fun startPayment(amount: Double, saleId: String) {
         viewModelScope.launch {
@@ -92,26 +98,43 @@ class PaymentViewModel(
         }
     }
 
-    // ✅ Check payment status after PhonePe returns
-    fun checkPaymentStatus(orderId: String) {
+    // ✅ FIX: Check payment status using merchant order ID with retry logic
+    fun checkPaymentStatus(merchantOrderId: String) {
         viewModelScope.launch {
             try {
                 Log.d(TAG, "========================================")
                 Log.d(TAG, "🔍 CHECKING PAYMENT STATUS")
-                Log.d(TAG, "Order ID: $orderId")
+                Log.d(TAG, "Merchant Order ID: $merchantOrderId")
                 Log.d(TAG, "========================================")
+
+                // ✅ Wait 2 seconds for PhonePe backend to update
+                Log.d(TAG, "⏳ Waiting 2 seconds for backend sync...")
+                delay(2000)
 
                 // Get fresh token
                 Log.d(TAG, "Fetching fresh token...")
                 val tokenRes = repository.fetchToken()
                 Log.d(TAG, "✅ Token received")
 
-                // Check order status
-                Log.d(TAG, "Checking order status...")
-                val statusResponse = repository.checkPaymentStatus(
-                    authToken = tokenRes.access_token,
-                    orderId = orderId
-                )
+                // ✅ Retry logic - try up to 3 times
+                var statusResponse: PhonePeStatusResponse? = null
+                var attemptCount = 0
+                val maxRetries = 3
+
+                while (statusResponse == null && attemptCount < maxRetries) {
+                    attemptCount++
+                    Log.d(TAG, "Attempt $attemptCount of $maxRetries...")
+
+                    statusResponse = repository.checkPaymentStatus(
+                        authToken = tokenRes.access_token,
+                        orderId = merchantOrderId  // ✅ Using merchant order ID
+                    )
+
+                    if (statusResponse == null && attemptCount < maxRetries) {
+                        Log.w(TAG, "Status check returned null, retrying in 2 seconds...")
+                        delay(2000)
+                    }
+                }
 
                 if (statusResponse != null) {
                     Log.d(TAG, "Status Response:")
@@ -151,8 +174,12 @@ class PaymentViewModel(
                     Log.d(TAG, "Payment status result set: $result")
                     Log.d(TAG, "========================================")
                 } else {
-                    Log.e(TAG, "❌ Status response is NULL")
-                    _paymentStatusEvent.value = PaymentStatusResult.Error("Failed to check status")
+                    Log.e(TAG, "❌ All $maxRetries attempts failed - Status response is NULL")
+                    Log.e(TAG, "⚠️ This could mean:")
+                    Log.e(TAG, "   1. Order not found in PhonePe system")
+                    Log.e(TAG, "   2. Network connectivity issues")
+                    Log.e(TAG, "   3. Backend API issue")
+                    _paymentStatusEvent.value = PaymentStatusResult.Error("Failed to check status after $maxRetries attempts")
                 }
 
             } catch (e: Exception) {
@@ -231,7 +258,7 @@ class PaymentViewModel(
         }
     }
 
-    // ✅ Update payment status in database
+    // ✅ FIXED: Update payment status in database with proper validation
     fun updatePaymentStatusInDb(
         iotOrderId: Int?,
         manualSaleId: Int?,
@@ -242,7 +269,7 @@ class PaymentViewModel(
         viewModelScope.launch {
             try {
                 Log.d(TAG, "========================================")
-                Log.d(TAG, "📝 UPDATING PAYMENT STATUS IN DATABASE")
+                Log.d(TAG, "💾 UPDATING PAYMENT STATUS IN DATABASE")
                 Log.d(TAG, "IOT Order ID: $iotOrderId")
                 Log.d(TAG, "Manual Sale ID: $manualSaleId")
                 Log.d(TAG, "Status: $status")
@@ -250,19 +277,35 @@ class PaymentViewModel(
                 Log.d(TAG, "Amount Paid: ₹$amountPaid")
                 Log.d(TAG, "========================================")
 
+                // ✅ Validate before calling API
+                if (iotOrderId == null && manualSaleId == null) {
+                    Log.e(TAG, "❌ Cannot update: Both IOT and Manual Sale IDs are null")
+                    _dbUpdateStatus.value = UpdatePaymentStatusResponse(
+                        success = false,
+                        message = "No valid order ID provided"
+                    )
+                    return@launch
+                }
+
+                // ✅ Ensure we don't send -1 as manual_sale_id
+                val validManualSaleId = if (manualSaleId != null && manualSaleId > 0) manualSaleId else null
+                val validIotOrderId = if (iotOrderId != null && iotOrderId > 0) iotOrderId else null
+
+                Log.d(TAG, "Validated IDs - IOT: $validIotOrderId, Manual: $validManualSaleId")
+
                 val response = repository.updatePaymentStatusInDb(
-                    iotOrderId = iotOrderId,
-                    manualSaleId = manualSaleId,
+                    iotOrderId = validIotOrderId,
+                    manualSaleId = validManualSaleId,
                     status = status,
                     transactionId = transactionId,
                     amountPaid = amountPaid
                 )
-                if (iotOrderId == null && manualSaleId == null) {
-                    Log.e(TAG, "Cannot update: No valid order ID")
 
-                }
+                _dbUpdateStatus.value = response
+
                 if (response.success) {
                     Log.d(TAG, "✅ Payment status updated successfully in DB")
+                    Log.d(TAG, "Affected rows: ${response.affected_rows}")
                 } else {
                     Log.e(TAG, "❌ Failed to update payment status: ${response.message}")
                 }
@@ -271,6 +314,11 @@ class PaymentViewModel(
                 Log.e(TAG, "❌ Error updating payment status in DB")
                 Log.e(TAG, "Error: ${e.message}")
                 e.printStackTrace()
+
+                _dbUpdateStatus.value = UpdatePaymentStatusResponse(
+                    success = false,
+                    message = "Exception: ${e.message}"
+                )
             }
         }
     }
