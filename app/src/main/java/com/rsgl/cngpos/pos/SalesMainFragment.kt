@@ -418,6 +418,17 @@ class SalesMainFragment : Fragment() {
 
                 Log.d(TAG, "Selected: IOT=$iotOrderId, Manual=$manualSaleId")
 
+                if (transaction.transactionStatus == "PAID") {
+                    val message = if (transaction.transactionId != null) {
+                        "✅ This transaction is already PAID\nTransaction ID: ${transaction.transactionId}"
+                    } else {
+                        "✅ This transaction is already PAID"
+                    }
+
+                    Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
+                    return@let  // ← Yeh navigation ko rok dega
+                }
+
                 // ✅ Validate
                 if (transaction.isAutomatic() && iotOrderId == 0) {
                     Toast.makeText(requireContext(), "Error: Invalid IOT Order ID", Toast.LENGTH_LONG).show()

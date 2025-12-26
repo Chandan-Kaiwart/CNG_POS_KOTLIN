@@ -558,9 +558,11 @@ class TransactionPreviewFragment : Fragment() {
             putString("dispenser", dispenser)
             putString("nozzle", nozzle)
             putString("fuelType", "CNG")
-            putDouble("quantity", quantity)
-            putDouble("pricePerKg", pricePerKg)
-            putDouble("totalPaid", result.amount)
+
+            // ✅ FIX: Use putFloat() instead of putDouble()
+            putFloat("quantity", quantity.toFloat())
+            putFloat("pricePerKg", pricePerKg.toFloat())
+            putFloat("totalPaid", result.amount.toFloat())
         }
 
         findNavController().navigate(

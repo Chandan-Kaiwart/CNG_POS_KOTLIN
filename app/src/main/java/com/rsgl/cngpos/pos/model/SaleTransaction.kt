@@ -36,7 +36,7 @@ data class SaleTransaction(
     val date: String,
     val time: String = "",
     val pricePerKg: String,
-
+    val transactionId: String? = null,
     // IDs
     val orderId: String?,           // Manual_SaleID
 

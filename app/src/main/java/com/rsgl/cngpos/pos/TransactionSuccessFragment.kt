@@ -81,9 +81,11 @@ class TransactionSuccessFragment : Fragment() {
             dispenser = it.getString(ARG_DISPENSER, "")
             nozzle = it.getString(ARG_NOZZLE, "")
             fuelType = it.getString(ARG_FUEL_TYPE, "CNG")
-            quantity = it.getDouble(ARG_QUANTITY, 0.0)
-            pricePerKg = it.getDouble(ARG_PRICE_PER_KG, 0.0)
-            totalPaid = it.getDouble(ARG_TOTAL_PAID, 0.0)
+
+            // ✅ FIX: Use getFloat() instead of getDouble()
+            quantity = it.getFloat(ARG_QUANTITY, 0f).toDouble()
+            pricePerKg = it.getFloat(ARG_PRICE_PER_KG, 0f).toDouble()
+            totalPaid = it.getFloat(ARG_TOTAL_PAID, 0f).toDouble()
         }
 
         // If dateTime is empty, use current time
